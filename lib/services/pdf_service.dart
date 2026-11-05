@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui' show Offset;
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 class PdfInfo {
@@ -40,8 +41,20 @@ class PdfService {
   }
 
   static Uint8List merge(List<Uint8List> files) {
-    final result = PdfDocument.mergeMultipleDocuments(files);
-    return Uint8List.fromList(result);
+    final out = PdfDocument();
+    for (final bytes in files) {
+      final src = PdfDocument(inputBytes: bytes);
+      for (int i = 0; i < src.pages.count; i++) {
+        final srcPage = src.pages[i];
+        out.pageSettings.size = srcPage.size;
+        final outPage = out.pages.add();
+        outPage.graphics.drawPdfTemplate(srcPage.createTemplate(), Offset.zero);
+      }
+      src.dispose();
+    }
+    final result = Uint8List.fromList(out.saveSync());
+    out.dispose();
+    return result;
   }
 
   static List<Uint8List> split(Uint8List bytes, String rangeStr) {
@@ -57,12 +70,9 @@ class PdfService {
       final out = PdfDocument();
       for (int p = startIdx; p <= endIdx; p++) {
         final srcPage = doc.pages[p];
-        final size = srcPage.size;
-        final outPage = out.pages.add(
-          PdfPageSettings(size, srcPage.rotation),
-        );
-        final template = srcPage.createTemplate();
-        outPage.graphics.drawPdfTemplate(template, const Offset(0, 0));
+        out.pageSettings.size = srcPage.size;
+        final outPage = out.pages.add();
+        outPage.graphics.drawPdfTemplate(srcPage.createTemplate(), Offset.zero);
       }
       results.add(Uint8List.fromList(out.saveSync()));
       out.dispose();

@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import '../widgets/pdf_app_bar.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/pdf_service.dart';
@@ -158,7 +159,11 @@ class _SplitScreenState extends State<SplitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Split PDF')),
+      appBar: pdfAppBar(
+        title: 'Split PDF',
+        onSave: _split,
+        saveEnabled: !_loading && _pickedBytes != null && _rangeError == null,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(

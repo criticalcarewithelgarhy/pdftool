@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../services/pdf_service.dart';
 import '../services/file_saver.dart';
 import '../widgets/file_chip.dart';
+import '../widgets/pdf_app_bar.dart';
 import 'encrypt_screen.dart';
 
 class DecryptScreen extends StatefulWidget {
@@ -214,7 +215,11 @@ class _DecryptScreenState extends State<DecryptScreen> {
     final canDecrypt = _isEncrypted == true && !_checking;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Decrypt PDF')),
+      appBar: pdfAppBar(
+        title: 'Decrypt PDF',
+        onSave: _process,
+        saveEnabled: !_loading && canDecrypt && _pwCtrl.text.isNotEmpty,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(

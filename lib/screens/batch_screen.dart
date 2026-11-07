@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import '../widgets/pdf_app_bar.dart';
 import '../services/pdf_service.dart';
 import '../services/file_saver.dart';
 
@@ -159,7 +160,11 @@ class _BatchScreenState extends State<BatchScreen> {
     final title = _isEncrypt ? 'Batch Encrypt' : 'Batch Decrypt';
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: pdfAppBar(
+        title: title,
+        onSave: _processAll,
+        saveEnabled: !_processing && _files.isNotEmpty,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

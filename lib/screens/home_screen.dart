@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import '../widgets/feature_card.dart';
+import '../widgets/pdf_app_bar.dart';
 import '../theme.dart';
 import 'encrypt_screen.dart';
 import 'decrypt_screen.dart';
@@ -99,15 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Row(
-          children: [
-            Icon(Icons.picture_as_pdf, size: 24),
-            SizedBox(width: 8),
-            Text('PDF Toolkit'),
-          ],
-        ),
-      ),
+      appBar: pdfAppBar(title: 'PDF Toolkit'),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: LayoutBuilder(

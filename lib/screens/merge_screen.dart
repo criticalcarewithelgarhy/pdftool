@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import '../widgets/pdf_app_bar.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/pdf_service.dart';
@@ -119,7 +120,11 @@ class _MergeScreenState extends State<MergeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Merge PDFs')),
+      appBar: pdfAppBar(
+        title: 'Merge PDFs',
+        onSave: _merge,
+        saveEnabled: !_loading && _files.length >= 2,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

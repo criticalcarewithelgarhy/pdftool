@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/pdf_service.dart';
 import '../widgets/file_chip.dart';
+import '../widgets/pdf_app_bar.dart';
 
 class InfoScreen extends StatefulWidget {
   const InfoScreen({super.key});
@@ -80,7 +81,7 @@ class _InfoScreenState extends State<InfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('PDF Info')),
+      appBar: pdfAppBar(title: 'PDF Info'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(

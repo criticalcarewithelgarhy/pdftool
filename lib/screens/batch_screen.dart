@@ -31,6 +31,7 @@ class _BatchScreenState extends State<BatchScreen> {
   int _succeeded = 0;
   int _failed = 0;
   bool _done = false;
+  Map<int, bool?> _fileStatus = {};
 
   bool get _isEncrypt => widget.mode == BatchMode.encrypt;
 
@@ -58,6 +59,7 @@ class _BatchScreenState extends State<BatchScreen> {
         _done = false;
         _succeeded = 0;
         _failed = 0;
+        _fileStatus = {};
       });
     }
   }
@@ -82,6 +84,7 @@ class _BatchScreenState extends State<BatchScreen> {
       _failed = 0;
       _done = false;
       _currentIndex = 0;
+      _fileStatus = {};
     });
 
     for (int i = 0; i < _files.length; i++) {
@@ -102,12 +105,21 @@ class _BatchScreenState extends State<BatchScreen> {
         final outName = '$baseName$suffix.pdf';
         final path = await FileSaver.saveToDownloads(result, outName);
         if (path != null) {
-          setState(() => _succeeded++);
+          setState(() {
+            _succeeded++;
+            _fileStatus[i] = true;
+          });
         } else {
-          setState(() => _failed++);
+          setState(() {
+            _failed++;
+            _fileStatus[i] = false;
+          });
         }
       } catch (_) {
-        setState(() => _failed++);
+        setState(() {
+          _failed++;
+          _fileStatus[i] = false;
+        });
       }
     }
 
@@ -122,6 +134,24 @@ class _BatchScreenState extends State<BatchScreen> {
 
   void _showSnack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Widget _buildLeading(int index) {
+    if (_processing && _currentIndex == index) {
+      return const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
+    final status = _fileStatus[index];
+    if (status == true) {
+      return const Icon(Icons.check_circle, color: Colors.green, size: 20);
+    }
+    if (status == false) {
+      return const Icon(Icons.cancel, color: Colors.red, size: 20);
+    }
+    return const Icon(Icons.picture_as_pdf, color: Color(0xFFD32F2F), size: 20);
   }
 
   @override
@@ -152,14 +182,7 @@ class _BatchScreenState extends State<BatchScreen> {
                   itemBuilder: (context, index) => ListTile(
                     dense: true,
                     contentPadding: EdgeInsets.zero,
-                    leading: _processing && _currentIndex == index
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.picture_as_pdf,
-                            color: Color(0xFFD32F2F), size: 20),
+                    leading: _buildLeading(index),
                     title: Text(_files[index].name,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontSize: 13)),
@@ -167,7 +190,10 @@ class _BatchScreenState extends State<BatchScreen> {
                         ? null
                         : IconButton(
                             icon: const Icon(Icons.close, size: 16),
-                            onPressed: () => setState(() => _files.removeAt(index)),
+                            onPressed: () => setState(() {
+                              _files.removeAt(index);
+                              _fileStatus.remove(index);
+                            }),
                           ),
                   ),
                 ),

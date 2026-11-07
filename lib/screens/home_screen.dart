@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import '../widgets/feature_card.dart';
+import '../theme.dart';
 import 'encrypt_screen.dart';
 import 'decrypt_screen.dart';
 import 'merge_screen.dart';
@@ -29,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icons.lock_outline,
         label: 'Encrypt',
         description: 'Add password protection',
+        color: FeatureColors.encrypt,
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const EncryptScreen()),
@@ -38,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icons.lock_open,
         label: 'Decrypt',
         description: 'Remove password protection',
+        color: FeatureColors.decrypt,
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const DecryptScreen()),
@@ -47,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icons.merge_type,
         label: 'Merge',
         description: 'Combine multiple PDFs',
+        color: FeatureColors.merge,
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const MergeScreen()),
@@ -56,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icons.call_split,
         label: 'Split',
         description: 'Extract pages by range',
+        color: FeatureColors.split,
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const SplitScreen()),
@@ -65,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icons.info_outline,
         label: 'PDF Info',
         description: 'View metadata & stats',
+        color: FeatureColors.info,
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const InfoScreen()),
@@ -74,6 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icons.lock,
         label: 'Batch Encrypt',
         description: 'Protect many files at once',
+        color: FeatureColors.batchEncrypt,
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const BatchScreen(mode: BatchMode.encrypt)),
@@ -83,6 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icons.lock_open_outlined,
         label: 'Batch Decrypt',
         description: 'Unlock many files at once',
+        color: FeatureColors.batchDecrypt,
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const BatchScreen(mode: BatchMode.decrypt)),
@@ -119,6 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: f.icon,
                   label: f.label,
                   description: f.description,
+                  color: f.color,
                   onTap: f.onTap,
                 );
               },
@@ -134,12 +143,14 @@ class _Feature {
   final IconData icon;
   final String label;
   final String description;
+  final Color color;
   final VoidCallback onTap;
 
   _Feature({
     required this.icon,
     required this.label,
     required this.description,
+    required this.color,
     required this.onTap,
   });
 }

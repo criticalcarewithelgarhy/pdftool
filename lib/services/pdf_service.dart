@@ -21,6 +21,16 @@ class PdfInfo {
 }
 
 class PdfService {
+  static bool checkEncrypted(Uint8List bytes) {
+    try {
+      final doc = PdfDocument(inputBytes: bytes);
+      doc.dispose();
+      return false;
+    } catch (_) {
+      return true;
+    }
+  }
+
   static Uint8List encrypt(Uint8List bytes, String password) {
     final doc = PdfDocument(inputBytes: bytes);
     doc.security.userPassword = password;

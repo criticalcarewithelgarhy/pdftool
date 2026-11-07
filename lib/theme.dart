@@ -34,3 +34,13 @@ final appTheme = ThemeData(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
   ),
 );
+
+class FeatureColors {
+  static const Color encrypt = Color(0xFFC62828);
+  static const Color decrypt = Color(0xFF2E7D32);
+  static const Color merge = Color(0xFF1565C0);
+  static const Color split = Color(0xFFE65100);
+  static const Color info = Color(0xFF6A1B9A);
+  static const Color batchEncrypt = Color(0xFFAD1457);
+  static const Color batchDecrypt = Color(0xFF00695C);
+}

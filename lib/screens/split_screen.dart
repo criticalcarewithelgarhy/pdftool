@@ -21,13 +21,48 @@ class _SplitScreenState extends State<SplitScreen> {
   final _rangeCtrl = TextEditingController();
   final _outNameCtrl = TextEditingController();
   bool _loading = false;
+  String? _rangeError;
   final List<Map<String, String>> _resultFiles = [];
 
   @override
+  void initState() {
+    super.initState();
+    _rangeCtrl.addListener(_validateRange);
+  }
+
+  @override
   void dispose() {
+    _rangeCtrl.removeListener(_validateRange);
     _rangeCtrl.dispose();
     _outNameCtrl.dispose();
     super.dispose();
+  }
+
+  void _validateRange() {
+    if (_pageCount == null || _rangeCtrl.text.trim().isEmpty) {
+      if (_rangeError != null) setState(() => _rangeError = null);
+      return;
+    }
+    final error = _checkRangeExceedsPages(_rangeCtrl.text.trim(), _pageCount!);
+    if (error != _rangeError) setState(() => _rangeError = error);
+  }
+
+  String? _checkRangeExceedsPages(String rangeStr, int maxPages) {
+    final parts = rangeStr.split(',');
+    for (final part in parts) {
+      final trimmed = part.trim();
+      if (trimmed.contains('-')) {
+        final bounds = trimmed.split('-');
+        final end = int.tryParse(bounds.length > 1 ? bounds[1].trim() : '');
+        if (end != null && end > maxPages) return 'Max page is $maxPages';
+        final start = int.tryParse(bounds[0].trim());
+        if (start != null && start > maxPages) return 'Max page is $maxPages';
+      } else {
+        final page = int.tryParse(trimmed);
+        if (page != null && page > maxPages) return 'Max page is $maxPages';
+      }
+    }
+    return null;
   }
 
   Future<void> _pickFile() async {
@@ -50,6 +85,7 @@ class _SplitScreenState extends State<SplitScreen> {
         _pageCount = count;
         _outNameCtrl.text = name.replaceAll(RegExp(r'\.pdf$', caseSensitive: false), '');
         _resultFiles.clear();
+        _rangeError = null;
       });
     }
   }
@@ -61,6 +97,10 @@ class _SplitScreenState extends State<SplitScreen> {
     }
     if (_rangeCtrl.text.trim().isEmpty) {
       _showSnack('Enter a page range (e.g. 1-3, 5, 7-9).');
+      return;
+    }
+    if (_rangeError != null) {
+      _showSnack(_rangeError!);
       return;
     }
 
@@ -136,24 +176,29 @@ class _SplitScreenState extends State<SplitScreen> {
                   _pickedName = null;
                   _pickedBytes = null;
                   _pageCount = null;
+                  _rangeError = null;
                   _resultFiles.clear();
                 });
               }),
               if (_pageCount != null && _pageCount! > 0) ...[
                 const SizedBox(height: 6),
                 Text(
-                  'This PDF has $_pageCount page${_pageCount == 1 ? '' : 's'}.',
-                  style: TextStyle(color: Colors.grey[700]),
+                  '$_pageCount page${_pageCount == 1 ? '' : 's'} — enter range below (e.g. 1-3, 5, 7-9)',
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ],
             const SizedBox(height: 20),
             TextField(
               controller: _rangeCtrl,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Page range',
                 hintText: 'e.g. 1-3, 5, 7-9',
                 helperText: 'Comma-separated pages or ranges',
+                errorText: _rangeError,
               ),
             ),
             const SizedBox(height: 14),
@@ -168,7 +213,7 @@ class _SplitScreenState extends State<SplitScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _loading ? null : _split,
+                onPressed: (_loading || _rangeError != null) ? null : _split,
                 child: _loading
                     ? const SizedBox(
                         height: 20,
@@ -184,7 +229,7 @@ class _SplitScreenState extends State<SplitScreen> {
               const SizedBox(height: 8),
               ..._resultFiles.map((f) => ListTile(
                     contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.picture_as_pdf, color: Color(0xFFD32F2F)),
+                    leading: const Icon(Icons.picture_as_pdf, color: Color(0xFFE65100)),
                     title: Text(f['name']!, overflow: TextOverflow.ellipsis),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,

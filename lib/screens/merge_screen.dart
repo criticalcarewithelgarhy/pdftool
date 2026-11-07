@@ -132,33 +132,35 @@ class _MergeScreenState extends State<MergeScreen> {
             ),
             const SizedBox(height: 16),
             if (_files.isNotEmpty) ...[
-              Text('${_files.length} file(s) selected:',
+              Text('${_files.length} file(s) — drag to reorder:',
                   style: const TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               Expanded(
-                child: ListView.builder(
+                child: ReorderableListView.builder(
                   itemCount: _files.length,
+                  onReorder: (oldIndex, newIndex) {
+                    setState(() {
+                      if (newIndex > oldIndex) newIndex--;
+                      final item = _files.removeAt(oldIndex);
+                      _files.insert(newIndex, item);
+                    });
+                  },
                   itemBuilder: (context, index) {
-                    return Dismissible(
+                    return ListTile(
                       key: ValueKey('${_files[index].name}$index'),
-                      direction: DismissDirection.endToStart,
-                      background: Container(
-                        color: Colors.red[100],
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: const Icon(Icons.delete, color: Colors.red),
-                      ),
-                      onDismissed: (_) => setState(() => _files.removeAt(index)),
-                      child: ListTile(
-                        leading: const Icon(Icons.picture_as_pdf, color: Color(0xFFD32F2F)),
-                        title: Text(_files[index].name,
-                            overflow: TextOverflow.ellipsis),
-                        subtitle: Text(
-                            '${(_files[index].bytes.lengthInBytes / 1024).toStringAsFixed(1)} KB'),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.close, size: 18),
-                          onPressed: () => setState(() => _files.removeAt(index)),
-                        ),
+                      leading: const Icon(Icons.picture_as_pdf, color: Color(0xFF1565C0)),
+                      title: Text(_files[index].name, overflow: TextOverflow.ellipsis),
+                      subtitle: Text(
+                          '${(_files[index].bytes.lengthInBytes / 1024).toStringAsFixed(1)} KB'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 18),
+                            onPressed: () => setState(() => _files.removeAt(index)),
+                          ),
+                          const Icon(Icons.drag_handle, color: Colors.grey),
+                        ],
                       ),
                     );
                   },

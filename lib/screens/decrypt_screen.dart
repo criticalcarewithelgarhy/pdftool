@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../services/pdf_service.dart';
 import '../services/file_saver.dart';
 import '../widgets/file_chip.dart';
+import 'encrypt_screen.dart';
 
 class DecryptScreen extends StatefulWidget {
   const DecryptScreen({super.key});
@@ -20,6 +21,8 @@ class _DecryptScreenState extends State<DecryptScreen> {
   final _pwCtrl = TextEditingController();
   bool _showPw = false;
   bool _loading = false;
+  bool _checking = false;
+  bool? _isEncrypted;
 
   @override
   void dispose() {
@@ -34,10 +37,22 @@ class _DecryptScreenState extends State<DecryptScreen> {
       withData: true,
     );
     if (result != null && result.files.single.bytes != null) {
+      final bytes = result.files.single.bytes!;
+      final name = result.files.single.name;
       setState(() {
-        _pickedName = result.files.single.name;
-        _pickedBytes = result.files.single.bytes;
+        _pickedName = name;
+        _pickedBytes = bytes;
+        _isEncrypted = null;
+        _checking = true;
       });
+      await Future.microtask(() {});
+      final encrypted = PdfService.checkEncrypted(bytes);
+      if (mounted) {
+        setState(() {
+          _isEncrypted = encrypted;
+          _checking = false;
+        });
+      }
     }
   }
 
@@ -116,8 +131,88 @@ class _DecryptScreenState extends State<DecryptScreen> {
     );
   }
 
+  Widget _buildStatusWidget() {
+    if (_checking) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            SizedBox(width: 10),
+            Text('Checking file…', style: TextStyle(color: Colors.grey)),
+          ],
+        ),
+      );
+    }
+    if (_isEncrypted == null) return const SizedBox.shrink();
+
+    if (!_isEncrypted!) {
+      return Container(
+        margin: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.orange[50],
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.orange.shade300),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'This PDF has no password. Use Encrypt to add one.',
+                    style: TextStyle(fontWeight: FontWeight.w600, color: Colors.orange),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const EncryptScreen()),
+              ),
+              child: const Text('Go to Encrypt'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.green[50],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.green.shade300),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.lock, color: Colors.green, size: 16),
+          SizedBox(width: 6),
+          Text(
+            'Locked — ready to decrypt',
+            style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final canDecrypt = _isEncrypted == true && !_checking;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Decrypt PDF')),
       body: SingleChildScrollView(
@@ -136,8 +231,11 @@ class _DecryptScreenState extends State<DecryptScreen> {
                 setState(() {
                   _pickedName = null;
                   _pickedBytes = null;
+                  _isEncrypted = null;
+                  _checking = false;
                 });
               }),
+              _buildStatusWidget(),
             ],
             const SizedBox(height: 24),
             TextField(
@@ -155,7 +253,7 @@ class _DecryptScreenState extends State<DecryptScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _loading ? null : _process,
+                onPressed: (_loading || (_pickedBytes != null && !canDecrypt)) ? null : _process,
                 child: _loading
                     ? const SizedBox(
                         height: 20,

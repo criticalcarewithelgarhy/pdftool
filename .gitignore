@@ -9,3 +9,4 @@ android/.gradle/
 android/local.properties
 android/key.properties
 *.jks
+pdf-toolkit-*/
